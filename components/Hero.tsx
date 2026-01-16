@@ -5,9 +5,10 @@ import { HeroSlide } from '../types';
 
 interface HeroProps {
   slides: HeroSlide[];
+  onShopNow: () => void;
 }
 
-const Hero: React.FC<HeroProps> = ({ slides }) => {
+const Hero: React.FC<HeroProps> = ({ slides, onShopNow }) => {
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
@@ -42,7 +43,10 @@ const Hero: React.FC<HeroProps> = ({ slides }) => {
             <div className={`max-w-2xl text-white transform transition-all duration-700 delay-300 ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               <h2 className="text-3xl md:text-5xl font-bold mb-4">{slide.title}</h2>
               <p className="text-lg md:text-xl mb-8 opacity-90">{slide.subtitle}</p>
-              <button className="bg-[#f04e23] hover:bg-[#d03d1a] text-white px-8 py-3 rounded-full text-lg font-bold transition-transform hover:scale-105 shadow-lg">
+              <button 
+                onClick={onShopNow}
+                className="bg-[#f04e23] hover:bg-[#d03d1a] text-white px-8 py-3 rounded-full text-lg font-bold transition-transform hover:scale-105 shadow-lg"
+              >
                 {slide.buttonText}
               </button>
             </div>

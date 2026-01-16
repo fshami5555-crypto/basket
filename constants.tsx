@@ -45,7 +45,8 @@ export const INITIAL_STATE: AppState = {
       total: 120, 
       status: 'pending', 
       date: '2024-05-20',
-      items: [{ productName: 'محضرة طعام احترافية', quantity: 1 }]
+      // Fix: Add missing price property to match the Order interface
+      items: [{ productName: 'محضرة طعام احترافية', quantity: 1, price: 120 }]
     }
   ]
 };

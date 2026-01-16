@@ -10,9 +10,10 @@ interface SpecialOffersPageProps {
   specialOffers: SpecialOffer[];
   onBack: () => void;
   onProductClick: (product: Product) => void;
+  onAddToCart: (product: Product) => void;
 }
 
-const SpecialOffersPage: React.FC<SpecialOffersPageProps> = ({ products, specialOffers, onBack, onProductClick }) => {
+const SpecialOffersPage: React.FC<SpecialOffersPageProps> = ({ products, specialOffers, onBack, onProductClick, onAddToCart }) => {
   // Filter products that have a standard discount
   const discountedProducts = products.filter(p => p.discountPrice && p.discountPrice < p.price);
 
@@ -86,9 +87,12 @@ const SpecialOffersPage: React.FC<SpecialOffersPageProps> = ({ products, special
                       <span className="text-sm text-red-400 font-bold line-through">{item.price} د.أ</span>
                       <span className="text-3xl font-black text-red-600">{item.offerPrice} د.أ</span>
                     </div>
-                    <div className="bg-red-600 text-white p-4 rounded-xl shadow-lg group-hover:bg-black transition-colors">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); onAddToCart(item); }}
+                      className="bg-red-600 text-white p-4 rounded-xl shadow-lg group-hover:bg-black transition-colors"
+                    >
                       <Zap size={24} />
-                    </div>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -102,6 +106,7 @@ const SpecialOffersPage: React.FC<SpecialOffersPageProps> = ({ products, special
         title="جميع المنتجات المخفضة" 
         products={discountedProducts} 
         onProductClick={onProductClick}
+        onAddToCart={onAddToCart}
       />
       
       {discountedProducts.length === 0 && flashSaleItems.length === 0 && (

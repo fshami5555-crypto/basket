@@ -8,9 +8,10 @@ interface ProductSectionProps {
   products: Product[];
   onSeeAll?: () => void;
   onProductClick?: (product: Product) => void;
+  onAddToCart?: (product: Product) => void;
 }
 
-const ProductSection: React.FC<ProductSectionProps> = ({ title, products, onSeeAll, onProductClick }) => {
+const ProductSection: React.FC<ProductSectionProps> = ({ title, products, onSeeAll, onProductClick, onAddToCart }) => {
   if (products.length === 0) return null;
 
   return (
@@ -42,10 +43,10 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products, onSeeA
                   خصم {Math.round(((product.price - product.discountPrice!) / product.price) * 100)}%
                 </div>
               )}
-              <div className="aspect-square rounded-md overflow-hidden mb-4 relative">
-                <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="aspect-square rounded-md overflow-hidden mb-4 relative bg-gray-50 border border-gray-100">
+                <img src={product.image} alt={product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                 <button 
-                  onClick={(e) => { e.stopPropagation(); /* Logic for cart */ }}
+                  onClick={(e) => { e.stopPropagation(); onAddToCart?.(product); }}
                   className="absolute bottom-2 left-2 bg-white p-2 rounded-full shadow-md text-[#f04e23] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#f04e23] hover:text-white"
                 >
                   <ShoppingCart size={20} />
@@ -64,7 +65,10 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products, onSeeA
                     </span>
                   )}
                 </div>
-                <button className="bg-gray-50 text-gray-400 p-2 rounded hover:bg-[#f04e23] hover:text-white transition-colors">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onAddToCart?.(product); }}
+                  className="bg-gray-50 text-gray-400 p-2 rounded hover:bg-[#f04e23] hover:text-white transition-colors"
+                >
                   <ShoppingCart size={16} />
                 </button>
               </div>

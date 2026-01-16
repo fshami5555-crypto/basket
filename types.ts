@@ -38,6 +38,11 @@ export interface SpecialOffer {
   offerPrice: number;
 }
 
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
 export interface Order {
   id: string;
   customerName: string;
@@ -45,7 +50,7 @@ export interface Order {
   total: number;
   status: 'pending' | 'completed' | 'cancelled';
   date: string;
-  items: { productName: string; quantity: number }[];
+  items: { productName: string; quantity: number; price: number }[];
 }
 
 export interface AppState {

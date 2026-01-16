@@ -8,9 +8,10 @@ interface CategoryPageProps {
   products: Product[];
   onBack: () => void;
   onProductClick: (product: Product) => void;
+  onAddToCart: (product: Product) => void;
 }
 
-const CategoryPage: React.FC<CategoryPageProps> = ({ category, products, onBack, onProductClick }) => {
+const CategoryPage: React.FC<CategoryPageProps> = ({ category, products, onBack, onProductClick, onAddToCart }) => {
   return (
     <div className="container mx-auto px-4 py-12">
       <button 
@@ -32,6 +33,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, products, onBack,
         title={`منتجات ${category.name}`} 
         products={products} 
         onProductClick={onProductClick}
+        onAddToCart={onAddToCart}
       />
       
       {products.length === 0 && (

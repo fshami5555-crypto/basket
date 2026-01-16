@@ -6,9 +6,10 @@ import { ShoppingCart, ArrowRight, CheckCircle2 } from 'lucide-react';
 interface ProductDetailProps {
   product: Product;
   onBack: () => void;
+  onAddToCart: (product: Product) => void;
 }
 
-const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack }) => {
+const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack, onAddToCart }) => {
   const allImages = [product.image, ...(product.images || [])];
   const [activeImage, setActiveImage] = useState(allImages[0]);
 
@@ -91,7 +92,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onBack }) => {
               </div>
             </div>
 
-            <button className="w-full bg-[#f04e23] text-white py-5 rounded-2xl font-black text-xl flex items-center justify-center gap-4 hover:bg-[#d03d1a] transition-all transform hover:scale-[1.02] shadow-xl shadow-[#f04e23]/20">
+            <button 
+              onClick={() => onAddToCart(product)}
+              className="w-full bg-[#f04e23] text-white py-5 rounded-2xl font-black text-xl flex items-center justify-center gap-4 hover:bg-[#d03d1a] transition-all transform hover:scale-[1.02] shadow-xl shadow-[#f04e23]/20"
+            >
               <ShoppingCart size={28} />
               أضف إلى سلة المشتريات
             </button>

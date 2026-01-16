@@ -11,9 +11,22 @@ interface HeaderProps {
   onCategoryClick: (category: Category) => void;
   onHomeClick: () => void;
   onOffersClick: () => void;
+  onCartClick: () => void;
+  cartCount: number;
+  cartTotal: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ onAdminClick, isAdmin, categories, onCategoryClick, onHomeClick, onOffersClick }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  onAdminClick, 
+  isAdmin, 
+  categories, 
+  onCategoryClick, 
+  onHomeClick, 
+  onOffersClick,
+  onCartClick,
+  cartCount,
+  cartTotal
+}) => {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       {/* Top Bar */}
@@ -54,12 +67,17 @@ const Header: React.FC<HeaderProps> = ({ onAdminClick, isAdmin, categories, onCa
                 <p className="text-xs opacity-80">تسجيل الدخول</p>
               </div>
             </button>
-            <div className="relative flex items-center gap-2 hover:opacity-80 transition cursor-pointer">
+            <div 
+              onClick={onCartClick}
+              className="relative flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
+            >
               <ShoppingCart size={24} />
-              <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
+              <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {cartCount}
+              </span>
               <div className="text-sm hidden sm:block text-right">
                 <p className="font-semibold">سلة التسوق</p>
-                <p className="text-xs opacity-80">0.00 د.أ</p>
+                <p className="text-xs opacity-80">{cartTotal.toFixed(2)} د.أ</p>
               </div>
             </div>
           </div>

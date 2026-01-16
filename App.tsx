@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppState, Category, Product } from './types';
+import { AppState, Category, Product, CartItem, Order } from './types';
 import { loadData, saveData } from './store';
 import Header from './components/Header';
 import Hero from './components/Hero';
@@ -13,6 +13,7 @@ import AdBanner from './components/AdBanner';
 import CategoryPage from './components/CategoryPage';
 import ProductDetail from './components/ProductDetail';
 import SpecialOffersPage from './components/SpecialOffersPage';
+import CartDrawer from './components/CartDrawer';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState | null>(null);
@@ -20,6 +21,10 @@ const App: React.FC = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [currentView, setCurrentView] = useState<{ type: 'home' | 'admin' | 'category' | 'product' | 'offers', data?: any }>({ type: 'home' });
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Cart State
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -28,6 +33,12 @@ const App: React.FC = () => {
       setIsLoading(false);
     };
     init();
+
+    // Load local cart
+    const localCart = localStorage.getItem('basket_cart');
+    if (localCart) {
+      setCartItems(JSON.parse(localCart));
+    }
   }, []);
 
   useEffect(() => {
@@ -35,6 +46,10 @@ const App: React.FC = () => {
       saveData(state);
     }
   }, [state, isLoading]);
+
+  useEffect(() => {
+    localStorage.setItem('basket_cart', JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const handleLogin = (success: boolean) => {
     if (success) {
@@ -61,6 +76,75 @@ const App: React.FC = () => {
   const navigateToOffers = () => {
     setCurrentView({ type: 'offers' });
     window.scrollTo(0, 0);
+  };
+
+  // Cart Handlers
+  const addToCart = (product: Product) => {
+    setCartItems(prev => {
+      const existing = prev.find(item => item.product.id === product.id);
+      if (existing) {
+        return prev.map(item => item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...prev, { product, quantity: 1 }];
+    });
+    setIsCartOpen(true);
+  };
+
+  const updateCartQuantity = (productId: string, delta: number) => {
+    setCartItems(prev => prev.map(item => 
+      item.product.id === productId ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
+    ));
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCartItems(prev => prev.filter(item => item.product.id !== productId));
+  };
+
+  const handleCheckout = (customerName: string, phoneNumber: string) => {
+    const orderId = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+    const total = cartItems.reduce((acc, item) => acc + (item.product.discountPrice || item.product.price) * item.quantity, 0);
+    
+    const newOrder: Order = {
+      id: orderId,
+      customerName,
+      phoneNumber,
+      total,
+      status: 'pending',
+      date: new Date().toLocaleDateString('ar-JO'),
+      items: cartItems.map(item => ({
+        productName: item.product.name,
+        quantity: item.quantity,
+        price: item.product.discountPrice || item.product.price
+      }))
+    };
+
+    // Save to Admin State
+    if (state) {
+      updateState({ orders: [newOrder, ...state.orders] });
+    }
+
+    // Prepare WhatsApp Message
+    let message = `*طلب جديد من متجر Basket Shop*\n`;
+    message += `*رقم الطلب:* ${orderId}\n`;
+    message += `*الاسم:* ${customerName}\n`;
+    message += `*رقم الهاتف:* ${phoneNumber}\n`;
+    message += `--------------------------\n`;
+    cartItems.forEach(item => {
+      const price = item.product.discountPrice || item.product.price;
+      message += `• ${item.product.name} (×${item.quantity}) - ${price * item.quantity} د.أ\n`;
+    });
+    message += `--------------------------\n`;
+    message += `*الإجمالي:* ${total.toFixed(2)} د.أ\n`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/962790999512?text=${encodedMessage}`;
+    
+    // Clear cart and close
+    setCartItems([]);
+    setIsCartOpen(false);
+    
+    // Redirect to WhatsApp
+    window.open(whatsappUrl, '_blank');
   };
 
   if (isLoading || !state) {
@@ -96,12 +180,15 @@ const App: React.FC = () => {
         onCategoryClick={navigateToCategory}
         onHomeClick={() => setCurrentView({ type: 'home' })}
         onOffersClick={navigateToOffers}
+        onCartClick={() => setIsCartOpen(true)}
+        cartCount={cartItems.reduce((acc, i) => acc + i.quantity, 0)}
+        cartTotal={cartItems.reduce((acc, i) => acc + (i.product.discountPrice || i.product.price) * i.quantity, 0)}
       />
       
       <main className="flex-grow">
         {currentView.type === 'home' ? (
           <>
-            <Hero slides={state.heroSlides || []} />
+            <Hero slides={state.heroSlides || []} onShopNow={navigateToOffers} />
             
             <div className="container mx-auto px-4 py-12">
               <div className="text-center mb-12">
@@ -126,6 +213,7 @@ const App: React.FC = () => {
                       products={catProducts} 
                       onSeeAll={() => navigateToCategory(cat)}
                       onProductClick={navigateToProduct}
+                      onAddToCart={addToCart}
                     />
                     {catProducts.length > 0 && ad && <AdBanner image={ad.image} />}
                   </React.Fragment>
@@ -139,6 +227,7 @@ const App: React.FC = () => {
             products={products.filter(p => p.category === currentView.data.name)}
             onBack={() => setCurrentView({ type: 'home' })}
             onProductClick={navigateToProduct}
+            onAddToCart={addToCart}
           />
         ) : currentView.type === 'offers' ? (
           <SpecialOffersPage 
@@ -146,16 +235,28 @@ const App: React.FC = () => {
             specialOffers={specialOffers}
             onBack={() => setCurrentView({ type: 'home' })}
             onProductClick={navigateToProduct}
+            onAddToCart={addToCart}
           />
         ) : (
           <ProductDetail 
             product={currentView.data} 
             onBack={() => setCurrentView({ type: 'home' })}
+            onAddToCart={addToCart}
           />
         )}
       </main>
 
       <Footer />
+
+      {/* Cart Drawer */}
+      <CartDrawer 
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cartItems}
+        onUpdateQuantity={updateCartQuantity}
+        onRemoveItem={removeFromCart}
+        onCheckout={handleCheckout}
+      />
 
       {showLogin && (
         <Login 
