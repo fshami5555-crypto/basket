@@ -22,13 +22,23 @@ const App: React.FC = () => {
   const [state, setState] = useState<AppState | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const [currentView, setCurrentView] = useState<{ type: 'home' | 'admin' | 'category' | 'product' | 'offers' | 'help' | 'contact', data?: any }>({ type: 'home' });
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
   
   // Cart State
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // Listen to browser navigation (back/forward)
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Sync data with Firebase
   useEffect(() => {
     const init = async () => {
       const data = await loadData();
@@ -37,7 +47,6 @@ const App: React.FC = () => {
     };
     init();
 
-    // Load local cart
     const localCart = localStorage.getItem('basket_cart');
     if (localCart) {
       try {
@@ -58,44 +67,23 @@ const App: React.FC = () => {
     localStorage.setItem('basket_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
+  // Navigation Function
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path);
+    setCurrentPath(path);
+    window.scrollTo(0, 0);
+  };
+
   const handleLogin = (success: boolean) => {
     if (success) {
       setIsAdmin(true);
       setShowLogin(false);
-      setCurrentView({ type: 'admin' });
+      navigate('/admin');
     }
   };
 
   const updateState = (newPartialState: Partial<AppState>) => {
     setState(prev => prev ? ({ ...prev, ...newPartialState }) : null);
-  };
-
-  const navigateToCategory = (category: Category) => {
-    setCurrentView({ type: 'category', data: category });
-    window.scrollTo(0, 0);
-  };
-
-  const navigateToProduct = (product: Product) => {
-    setCurrentView({ type: 'product', data: product });
-    window.scrollTo(0, 0);
-  };
-
-  const navigateToOffers = () => {
-    setCurrentView({ type: 'offers' });
-    window.scrollTo(0, 0);
-  };
-
-  const navigateToHelp = (sectionId: string) => {
-    const section = state?.helpSections.find(s => s.id === sectionId);
-    if (section) {
-      setCurrentView({ type: 'help', data: section });
-      window.scrollTo(0, 0);
-    }
-  };
-
-  const navigateToContact = () => {
-    setCurrentView({ type: 'contact' });
-    window.scrollTo(0, 0);
   };
 
   // Cart Handlers
@@ -171,109 +159,164 @@ const App: React.FC = () => {
     );
   }
 
-  if (currentView.type === 'admin') {
+  // --- Router Logic ---
+  const renderContent = () => {
+    const products = state.products || [];
+    const categories = state.categories || [];
+    const brands = state.brands || [];
+    const ads = state.ads || [];
+    const specialOffers = state.specialOffers || [];
+
+    // Parse URL
+    const pathParts = currentPath.split('/').filter(Boolean);
+
+    // /admin
+    if (currentPath === '/admin') {
+      if (isAdmin) {
+        return (
+          <AdminDashboard 
+            state={state} 
+            updateState={updateState} 
+            onLogout={() => { setIsAdmin(false); navigate('/'); }} 
+          />
+        );
+      } else {
+        setShowLogin(true);
+        navigate('/'); // Fallback
+      }
+    }
+
+    // /category/[id]
+    if (pathParts[0] === 'category' && pathParts[1]) {
+      const category = categories.find(c => c.id === pathParts[1]);
+      if (category) {
+        return (
+          <CategoryPage 
+            category={category} 
+            products={products.filter(p => p.category === category.name)}
+            onBack={() => navigate('/')}
+            onProductClick={(p) => navigate(`/product/${p.id}`)}
+            onAddToCart={addToCart}
+          />
+        );
+      }
+    }
+
+    // /product/[id]
+    if (pathParts[0] === 'product' && pathParts[1]) {
+      const product = products.find(p => p.id === pathParts[1]);
+      if (product) {
+        return (
+          <ProductDetail 
+            product={product} 
+            onBack={() => navigate('/')}
+            onAddToCart={addToCart}
+          />
+        );
+      }
+    }
+
+    // /offers
+    if (currentPath === '/offers') {
+      return (
+        <SpecialOffersPage 
+          products={products}
+          specialOffers={specialOffers}
+          onBack={() => navigate('/')}
+          onProductClick={(p) => navigate(`/product/${p.id}`)}
+          onAddToCart={addToCart}
+        />
+      );
+    }
+
+    // /help/[id]
+    if (pathParts[0] === 'help' && pathParts[1]) {
+      const section = state.helpSections.find(s => s.id === pathParts[1]);
+      if (section) {
+        return <HelpPage section={section} onBack={() => navigate('/')} />;
+      }
+    }
+
+    // /contact
+    if (currentPath === '/contact') {
+      return <ContactPage />;
+    }
+
+    // / (Home) - default
+    return (
+      <>
+        <Hero slides={state.heroSlides || []} onShopNow={() => navigate('/offers')} />
+        
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center mb-12">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+              المتجر الأول بالأردن المرخص والمعتمد لدى الوكالات الكهربائية لتستقبلك بأفرع رسمية للتأكد من جودة المنتج وتجربته
+            </h1>
+          </div>
+
+          <BrandSection brands={brands} />
+
+          <CategoryGrid 
+            categories={categories} 
+            onCategoryClick={(cat) => navigate(`/category/${cat.id}`)} 
+          />
+          
+          {categories.map((cat, index) => {
+            const catProducts = products.filter(p => p.category === cat.name).slice(0, 4);
+            const ad = ads.length > 0 ? ads[index % ads.length] : null;
+            
+            return (
+              <React.Fragment key={cat.id}>
+                <ProductSection 
+                  title={cat.name} 
+                  products={catProducts} 
+                  onSeeAll={() => navigate(`/category/${cat.id}`)}
+                  onProductClick={(p) => navigate(`/product/${p.id}`)}
+                  onAddToCart={addToCart}
+                />
+                {catProducts.length > 0 && ad && <AdBanner image={ad.image} />}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </>
+    );
+  };
+
+  // If we are in admin mode, don't show the regular header/footer
+  if (currentPath === '/admin' && isAdmin) {
     return (
       <AdminDashboard 
         state={state} 
         updateState={updateState} 
-        onLogout={() => { setIsAdmin(false); setCurrentView({ type: 'home' }); }} 
+        onLogout={() => { setIsAdmin(false); navigate('/'); }} 
       />
     );
   }
 
-  const categories = state.categories || [];
-  const products = state.products || [];
-  const brands = state.brands || [];
-  const ads = state.ads || [];
-  const specialOffers = state.specialOffers || [];
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header 
-        onAdminClick={() => isAdmin ? setCurrentView({ type: 'admin' }) : setShowLogin(true)} 
+        onAdminClick={() => isAdmin ? navigate('/admin') : setShowLogin(true)} 
         isAdmin={isAdmin}
-        categories={categories}
-        onCategoryClick={navigateToCategory}
-        onHomeClick={() => setCurrentView({ type: 'home' })}
-        onOffersClick={navigateToOffers}
-        onContactClick={navigateToContact}
+        categories={state.categories || []}
+        onCategoryClick={(cat) => navigate(`/category/${cat.id}`)}
+        onHomeClick={() => navigate('/')}
+        onOffersClick={() => navigate('/offers')}
+        onContactClick={() => navigate('/contact')}
         onCartClick={() => setIsCartOpen(true)}
         cartCount={cartItems.reduce((acc, i) => acc + i.quantity, 0)}
         cartTotal={cartItems.reduce((acc, i) => acc + (i.product.discountPrice || i.product.price) * i.quantity, 0)}
       />
       
       <main className="flex-grow">
-        {currentView.type === 'home' ? (
-          <>
-            <Hero slides={state.heroSlides || []} onShopNow={navigateToOffers} />
-            
-            <div className="container mx-auto px-4 py-12">
-              <div className="text-center mb-12">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-                  المتجر الأول بالأردن المرخص والمعتمد لدى الوكالات الكهربائية لتستقبلك بأفرع رسمية للتأكد من جودة المنتج وتجربته
-                </h1>
-              </div>
-
-              {/* Brand Section Below Hero */}
-              <BrandSection brands={brands} />
-
-              <CategoryGrid 
-                categories={categories} 
-                onCategoryClick={navigateToCategory} 
-              />
-              
-              {categories.map((cat, index) => {
-                const catProducts = products.filter(p => p.category === cat.name).slice(0, 4);
-                const ad = ads.length > 0 ? ads[index % ads.length] : null;
-                
-                return (
-                  <React.Fragment key={cat.id}>
-                    <ProductSection 
-                      title={cat.name} 
-                      products={catProducts} 
-                      onSeeAll={() => navigateToCategory(cat)}
-                      onProductClick={navigateToProduct}
-                      onAddToCart={addToCart}
-                    />
-                    {catProducts.length > 0 && ad && <AdBanner image={ad.image} />}
-                  </React.Fragment>
-                );
-              })}
-            </div>
-          </>
-        ) : currentView.type === 'category' ? (
-          <CategoryPage 
-            category={currentView.data} 
-            products={products.filter(p => p.category === currentView.data.name)}
-            onBack={() => setCurrentView({ type: 'home' })}
-            onProductClick={navigateToProduct}
-            onAddToCart={addToCart}
-          />
-        ) : currentView.type === 'offers' ? (
-          <SpecialOffersPage 
-            products={products}
-            specialOffers={specialOffers}
-            onBack={() => setCurrentView({ type: 'home' })}
-            onProductClick={navigateToProduct}
-            onAddToCart={addToCart}
-          />
-        ) : currentView.type === 'help' ? (
-          <HelpPage 
-            section={currentView.data} 
-            onBack={() => setCurrentView({ type: 'home' })} 
-          />
-        ) : currentView.type === 'contact' ? (
-          <ContactPage />
-        ) : (
-          <ProductDetail 
-            product={currentView.data} 
-            onBack={() => setCurrentView({ type: 'home' })}
-            onAddToCart={addToCart}
-          />
-        )}
+        {renderContent()}
       </main>
 
-      <Footer onHelpClick={navigateToHelp} onContactClick={navigateToContact} />
+      <Footer 
+        onHelpClick={(id) => navigate(`/help/${id}`)} 
+        onContactClick={() => navigate('/contact')} 
+      />
 
       <CartDrawer 
         isOpen={isCartOpen}
