@@ -9,17 +9,29 @@ interface CategoryGridProps {
 
 const CategoryGrid: React.FC<CategoryGridProps> = ({ categories, onCategoryClick }) => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-8 mb-16">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6 mb-16">
       {categories.map((cat) => (
         <div 
           key={cat.id} 
           onClick={() => onCategoryClick(cat)}
-          className="flex flex-col items-center group cursor-pointer bg-white p-6 rounded-2xl border border-gray-100 hover:border-primary transition-all hover:shadow-xl"
+          className="group cursor-pointer bg-white rounded-2xl border border-gray-100 p-4 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,51,102,0.1)] hover:-translate-y-2 border-b-4 hover:border-b-primary active:scale-95"
         >
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden mb-4 bg-gray-50 border-2 border-transparent group-hover:border-accent transition-all p-2">
-            <img src={cat.image} alt={cat.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500" />
+          {/* Square Image Container */}
+          <div className="aspect-square w-full rounded-xl overflow-hidden mb-4 bg-gray-50 flex items-center justify-center p-4 group-hover:bg-blue-50/50 transition-colors">
+            <img 
+              src={cat.image} 
+              alt={cat.name} 
+              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" 
+            />
           </div>
-          <h3 className="text-sm md:text-base font-black text-primary text-center group-hover:text-accent transition-colors">{cat.name}</h3>
+          
+          {/* Label */}
+          <div className="text-center">
+            <h3 className="text-sm md:text-base font-black text-primary group-hover:text-accent transition-colors">
+              {cat.name}
+            </h3>
+            <div className="w-0 group-hover:w-full h-0.5 bg-accent mx-auto mt-1 transition-all duration-300"></div>
+          </div>
         </div>
       ))}
     </div>
