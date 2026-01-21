@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Search, ShoppingCart, User, Menu } from 'lucide-react';
+import { Search, ShoppingCart, User, Phone, MapPin } from 'lucide-react';
 import { LOGO_URL } from '../constants';
 import { Category } from '../types';
 
@@ -11,6 +11,7 @@ interface HeaderProps {
   onCategoryClick: (category: Category) => void;
   onHomeClick: () => void;
   onOffersClick: () => void;
+  onContactClick: () => void;
   onCartClick: () => void;
   cartCount: number;
   cartTotal: number;
@@ -23,93 +24,99 @@ const Header: React.FC<HeaderProps> = ({
   onCategoryClick, 
   onHomeClick, 
   onOffersClick,
+  onContactClick,
   onCartClick,
   cartCount,
   cartTotal
 }) => {
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
-      {/* Top Bar */}
-      <div className="bg-[#f04e23] text-white py-4">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 shadow-md">
+      {/* Top Utility Bar */}
+      <div className="bg-primary-dark text-white py-2 text-xs">
+        <div className="container mx-auto px-4 flex justify-between items-center">
+          <div className="flex gap-4">
+            <span className="flex items-center gap-1"><Phone size={12} /> 0790999512</span>
+            <span className="flex items-center gap-1"><MapPin size={12} /> الأردن - عمان</span>
+          </div>
+          <div className="flex gap-4">
+            <button onClick={onContactClick} className="hover:text-gray-300">اتصل بنا</button>
+            <button onClick={onAdminClick} className="hover:text-gray-300">{isAdmin ? 'لوحة الإدارة' : 'دخول الموظفين'}</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Header Bar */}
+      <div className="bg-white py-4 border-b">
+        <div className="container mx-auto px-4 flex items-center justify-between gap-6">
           {/* Logo */}
-          <div className="flex items-center cursor-pointer" onClick={onHomeClick}>
-            <img src={LOGO_URL} alt="Basket Shop" className="h-12 w-auto brightness-0 invert" />
+          <div className="flex-shrink-0 cursor-pointer" onClick={onHomeClick}>
+            <img src={LOGO_URL} alt="Basket Shop" className="h-10 md:h-12 w-auto" />
           </div>
 
-          {/* Search */}
-          <div className="flex-1 max-w-2xl w-full flex">
-            <div className="relative w-full">
+          {/* Search Box */}
+          <div className="flex-grow max-w-2xl relative hidden md:block">
+            <div className="flex overflow-hidden rounded-lg border-2 border-primary">
               <input 
                 type="text" 
-                placeholder="البحث في أكثر من 20000 منتج..." 
-                className="w-full px-4 py-2 rounded-r-md text-gray-800 focus:outline-none"
+                placeholder="ابحث عن منتجك المفضل..." 
+                className="flex-grow px-4 py-2 outline-none text-sm"
               />
-              <button className="absolute left-0 top-0 bottom-0 bg-white/20 px-4 rounded-l-md hover:bg-white/30">
+              <button className="bg-primary text-white px-6 py-2 hover:bg-primary-dark transition-colors">
                 <Search size={20} />
               </button>
             </div>
-            <select className="bg-white text-gray-800 px-4 py-2 rounded-l-md border-r border-gray-200 hidden md:block">
-              <option>الجميع</option>
-              {categories.map(c => <option key={c.id}>{c.name}</option>)}
-            </select>
           </div>
 
-          {/* User Actions */}
-          <div className="flex items-center gap-6">
+          {/* User & Cart */}
+          <div className="flex items-center gap-4">
             <button 
               onClick={onAdminClick}
-              className="flex items-center gap-2 hover:opacity-80 transition"
+              className="flex flex-col items-center gap-1 text-primary hover:text-accent transition-colors"
             >
               <User size={24} />
-              <div className="text-sm hidden sm:block text-right">
-                <p className="font-semibold">{isAdmin ? 'لوحة التحكم' : 'حسابي'}</p>
-                <p className="text-xs opacity-80">تسجيل الدخول</p>
-              </div>
+              <span className="text-[10px] font-bold hidden sm:block">حسابي</span>
             </button>
             <div 
               onClick={onCartClick}
-              className="relative flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
+              className="relative flex flex-col items-center gap-1 text-primary hover:text-accent transition-colors cursor-pointer"
             >
-              <ShoppingCart size={24} />
-              <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {cartCount}
-              </span>
-              <div className="text-sm hidden sm:block text-right">
-                <p className="font-semibold">سلة التسوق</p>
-                <p className="text-xs opacity-80">{cartTotal.toFixed(2)} د.أ</p>
+              <div className="relative">
+                <ShoppingCart size={24} />
+                <span className="absolute -top-1 -right-1 bg-accent text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {cartCount}
+                </span>
               </div>
+              <span className="text-[10px] font-bold hidden sm:block">السلة: {cartTotal.toFixed(0)} د.أ</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Navigation Menu */}
-      <nav className="bg-white border-b overflow-x-auto whitespace-nowrap scrollbar-hide">
-        <div className="container mx-auto px-4 flex items-center justify-center md:justify-start">
-          <ul className="flex items-center gap-8 py-3 text-sm font-semibold text-gray-700">
+      {/* Nav Menu Bar */}
+      <nav className="bg-primary text-white overflow-x-auto scrollbar-hide">
+        <div className="container mx-auto px-4">
+          <ul className="flex items-center gap-6 py-3 text-sm font-semibold whitespace-nowrap">
             <li 
               onClick={onHomeClick}
-              className="hover:text-[#f04e23] cursor-pointer transition pb-1"
+              className="hover:text-accent cursor-pointer transition flex items-center gap-2 border-l border-white/20 pl-6"
             >
-              الصفحة الرئيسية
+              الرئيسية
             </li>
             {categories.map(cat => (
               <li 
                 key={cat.id} 
                 onClick={() => onCategoryClick(cat)}
-                className="hover:text-[#f04e23] cursor-pointer transition"
+                className="hover:text-accent cursor-pointer transition"
               >
                 {cat.name}
               </li>
             ))}
             <li 
               onClick={onOffersClick}
-              className="text-[#f04e23] font-bold cursor-pointer transition border-b-2 border-[#f04e23] pb-1"
+              className="bg-accent px-4 py-1 rounded text-white animate-pulse font-black cursor-pointer"
             >
-              عروض خاصة
+              العروض المميزة
             </li>
-            <li className="hover:text-[#f04e23] cursor-pointer transition">اتصل بنا</li>
           </ul>
         </div>
       </nav>

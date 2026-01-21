@@ -1,5 +1,5 @@
 
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -12,5 +12,8 @@ const firebaseConfig = {
   measurementId: "G-K3BMWFKNY9"
 };
 
-const app = initializeApp(firebaseConfig);
+// تهيئة Firebase باستخدام نمط Singleton
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const db = getFirestore(app);
+
+export default app;

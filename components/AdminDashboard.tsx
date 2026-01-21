@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { AppState, Product, Category, HeroSlide, Order, Ad, SpecialOffer } from '../types';
-import { Package, Grid, LayoutPanelLeft, ShoppingBag, LogOut, Plus, Trash2, Megaphone, Image as ImageIcon, ChevronDown, ChevronUp, Zap, Clock } from 'lucide-react';
+import { AppState, Product, Category, HeroSlide, Order, Ad, SpecialOffer, HelpSection } from '../types';
+import { Package, Grid, LayoutPanelLeft, ShoppingBag, LogOut, Plus, Trash2, Megaphone, Image as ImageIcon, ChevronDown, ChevronUp, Zap, Clock, Info } from 'lucide-react';
 import { LOGO_URL } from '../constants';
 
 interface AdminDashboardProps {
@@ -11,7 +11,7 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'categories' | 'products' | 'hero' | 'ads' | 'offers'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'categories' | 'products' | 'hero' | 'ads' | 'offers' | 'help'>('orders');
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
   const products = state.products || [];
@@ -20,6 +20,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
   const ads = state.ads || [];
   const orders = state.orders || [];
   const specialOffers = state.specialOffers || [];
+  const helpSections = state.helpSections || [];
 
   const tabs = [
     { id: 'orders', label: 'الطلبات', icon: ShoppingBag },
@@ -28,6 +29,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
     { id: 'hero', label: 'الهيرو (Slider)', icon: LayoutPanelLeft },
     { id: 'ads', label: 'إعلانات الموقع', icon: Megaphone },
     { id: 'offers', label: 'عروض الفلاش', icon: Zap },
+    { id: 'help', label: 'دليل المساعدة', icon: Info },
   ] as const;
 
   // Products
@@ -104,6 +106,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
 
   const deleteOffer = (id: string) => {
     updateState({ specialOffers: specialOffers.filter(o => o.id !== id) });
+  };
+
+  // Help Sections Update
+  const updateHelpSection = (id: string, partial: Partial<HelpSection>) => {
+    const newSections = helpSections.map(s => s.id === id ? { ...s, ...partial } : s);
+    updateState({ helpSections: newSections });
   };
 
   return (
@@ -526,13 +534,43 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
                     </div>
                   </div>
                 ))}
-                
-                {specialOffers.length === 0 && (
-                  <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                    <Zap className="mx-auto mb-4 text-gray-300" size={64} />
-                    <p className="text-gray-400 font-bold">لا يوجد عروض فلاش نشطة حالياً. ابدأ بإضافة عرض جديد!</p>
+              </div>
+            </div>
+          )}
+
+          {/* Help Tab */}
+          {activeTab === 'help' && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="font-bold text-xl mb-6 flex items-center gap-2"><Info className="text-blue-500" /> تعديل محتوى دليل المساعدة</h3>
+              <div className="space-y-12">
+                {helpSections.map((section) => (
+                  <div key={section.id} className="border-b pb-12 last:border-0">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                      <div className="md:col-span-1">
+                        <h4 className="font-black text-gray-400 uppercase text-xs tracking-widest mb-2">معرف القسم</h4>
+                        <div className="bg-gray-100 px-3 py-1 rounded-lg inline-block font-mono text-xs">{section.id}</div>
+                      </div>
+                      <div className="md:col-span-3 space-y-4">
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-2">عنوان الصفحة</label>
+                          <input 
+                            className="w-full border-2 p-3 rounded-xl focus:border-[#f04e23] outline-none font-bold text-lg" 
+                            value={section.title} 
+                            onChange={(e) => updateHelpSection(section.id, { title: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 mb-2">المحتوى</label>
+                          <textarea 
+                            className="w-full border-2 p-4 rounded-xl focus:border-[#f04e23] outline-none h-48 leading-relaxed text-gray-600" 
+                            value={section.content} 
+                            onChange={(e) => updateHelpSection(section.id, { content: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
             </div>
           )}

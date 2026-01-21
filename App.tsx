@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppState, Category, Product, CartItem, Order } from './types';
+import { AppState, Category, Product, CartItem, Order, HelpSection } from './types';
 import { loadData, saveData } from './store';
 import Header from './components/Header';
 import Hero from './components/Hero';
@@ -14,12 +14,14 @@ import CategoryPage from './components/CategoryPage';
 import ProductDetail from './components/ProductDetail';
 import SpecialOffersPage from './components/SpecialOffersPage';
 import CartDrawer from './components/CartDrawer';
+import HelpPage from './components/HelpPage';
+import ContactPage from './components/ContactPage';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const [currentView, setCurrentView] = useState<{ type: 'home' | 'admin' | 'category' | 'product' | 'offers', data?: any }>({ type: 'home' });
+  const [currentView, setCurrentView] = useState<{ type: 'home' | 'admin' | 'category' | 'product' | 'offers' | 'help' | 'contact', data?: any }>({ type: 'home' });
   const [isLoading, setIsLoading] = useState(true);
   
   // Cart State
@@ -37,7 +39,11 @@ const App: React.FC = () => {
     // Load local cart
     const localCart = localStorage.getItem('basket_cart');
     if (localCart) {
-      setCartItems(JSON.parse(localCart));
+      try {
+        setCartItems(JSON.parse(localCart));
+      } catch (e) {
+        console.error("Cart load error", e);
+      }
     }
   }, []);
 
@@ -75,6 +81,19 @@ const App: React.FC = () => {
 
   const navigateToOffers = () => {
     setCurrentView({ type: 'offers' });
+    window.scrollTo(0, 0);
+  };
+
+  const navigateToHelp = (sectionId: string) => {
+    const section = state?.helpSections.find(s => s.id === sectionId);
+    if (section) {
+      setCurrentView({ type: 'help', data: section });
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const navigateToContact = () => {
+    setCurrentView({ type: 'contact' });
     window.scrollTo(0, 0);
   };
 
@@ -180,6 +199,7 @@ const App: React.FC = () => {
         onCategoryClick={navigateToCategory}
         onHomeClick={() => setCurrentView({ type: 'home' })}
         onOffersClick={navigateToOffers}
+        onContactClick={navigateToContact}
         onCartClick={() => setIsCartOpen(true)}
         cartCount={cartItems.reduce((acc, i) => acc + i.quantity, 0)}
         cartTotal={cartItems.reduce((acc, i) => acc + (i.product.discountPrice || i.product.price) * i.quantity, 0)}
@@ -237,6 +257,13 @@ const App: React.FC = () => {
             onProductClick={navigateToProduct}
             onAddToCart={addToCart}
           />
+        ) : currentView.type === 'help' ? (
+          <HelpPage 
+            section={currentView.data} 
+            onBack={() => setCurrentView({ type: 'home' })} 
+          />
+        ) : currentView.type === 'contact' ? (
+          <ContactPage />
         ) : (
           <ProductDetail 
             product={currentView.data} 
@@ -246,7 +273,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <Footer />
+      <Footer onHelpClick={navigateToHelp} onContactClick={navigateToContact} />
 
       {/* Cart Drawer */}
       <CartDrawer 

@@ -9,17 +9,17 @@ interface CategoryGridProps {
 
 const CategoryGrid: React.FC<CategoryGridProps> = ({ categories, onCategoryClick }) => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 mb-16">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-8 mb-16">
       {categories.map((cat) => (
         <div 
           key={cat.id} 
           onClick={() => onCategoryClick(cat)}
-          className="flex flex-col items-center group cursor-pointer"
+          className="flex flex-col items-center group cursor-pointer bg-white p-6 rounded-2xl border border-gray-100 hover:border-primary transition-all hover:shadow-xl"
         >
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden mb-4 border-4 border-white shadow-md group-hover:border-[#f04e23] transition-colors">
-            <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden mb-4 bg-gray-50 border-2 border-transparent group-hover:border-accent transition-all p-2">
+            <img src={cat.image} alt={cat.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500" />
           </div>
-          <h3 className="text-sm md:text-base font-bold text-gray-700 text-center group-hover:text-[#f04e23] transition-colors">{cat.name}</h3>
+          <h3 className="text-sm md:text-base font-black text-primary text-center group-hover:text-accent transition-colors">{cat.name}</h3>
         </div>
       ))}
     </div>

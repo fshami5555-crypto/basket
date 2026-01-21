@@ -14,7 +14,7 @@ const Hero: React.FC<HeroProps> = ({ slides, onShopNow }) => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, [slides.length]);
 
@@ -24,7 +24,7 @@ const Hero: React.FC<HeroProps> = ({ slides, onShopNow }) => {
   const prev = () => setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
 
   return (
-    <div className="relative h-[400px] md:h-[500px] overflow-hidden group">
+    <div className="relative h-[350px] md:h-[550px] overflow-hidden group">
       {slides.map((slide, index) => (
         <div 
           key={slide.id}
@@ -32,20 +32,20 @@ const Hero: React.FC<HeroProps> = ({ slides, onShopNow }) => {
         >
           {/* Background Image */}
           <div 
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] ease-linear scale-110"
-            style={{ backgroundImage: `url(${slide.image})`, transform: index === current ? 'scale(1)' : 'scale(1.1)' }}
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] ease-linear"
+            style={{ backgroundImage: `url(${slide.image})` }}
           >
-            <div className="absolute inset-0 bg-gradient-to-l from-[#f04e23]/40 to-black/60"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/80 via-primary/30 to-transparent"></div>
           </div>
 
           {/* Content */}
-          <div className="absolute inset-0 flex items-center justify-center text-center px-4">
-            <div className={`max-w-2xl text-white transform transition-all duration-700 delay-300 ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-              <h2 className="text-3xl md:text-5xl font-bold mb-4">{slide.title}</h2>
-              <p className="text-lg md:text-xl mb-8 opacity-90">{slide.subtitle}</p>
+          <div className="absolute inset-0 flex items-center px-4 md:px-20">
+            <div className={`max-w-xl text-white transform transition-all duration-700 delay-300 ${index === current ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}`}>
+              <h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight">{slide.title}</h2>
+              <p className="text-xl md:text-2xl mb-10 text-gray-200 border-r-4 border-accent pr-6">{slide.subtitle}</p>
               <button 
                 onClick={onShopNow}
-                className="bg-[#f04e23] hover:bg-[#d03d1a] text-white px-8 py-3 rounded-full text-lg font-bold transition-transform hover:scale-105 shadow-lg"
+                className="bg-accent hover:bg-accent-hover text-white px-10 py-4 rounded font-black text-lg transition-all shadow-xl hover:scale-105"
               >
                 {slide.buttonText}
               </button>
@@ -55,26 +55,28 @@ const Hero: React.FC<HeroProps> = ({ slides, onShopNow }) => {
       ))}
 
       {/* Controls */}
-      <button 
-        onClick={prev}
-        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 text-white hover:bg-white/40 transition-colors hidden group-hover:block"
-      >
-        <ChevronRight size={32} />
-      </button>
-      <button 
-        onClick={next}
-        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 text-white hover:bg-white/40 transition-colors hidden group-hover:block"
-      >
-        <ChevronLeft size={32} />
-      </button>
+      <div className="absolute bottom-10 right-10 flex gap-4">
+        <button 
+          onClick={prev}
+          className="p-3 rounded-full border border-white/50 text-white hover:bg-white hover:text-primary transition-all"
+        >
+          <ChevronRight size={24} />
+        </button>
+        <button 
+          onClick={next}
+          className="p-3 rounded-full border border-white/50 text-white hover:bg-white hover:text-primary transition-all"
+        >
+          <ChevronLeft size={24} />
+        </button>
+      </div>
 
-      {/* Dots */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+      {/* Indicators */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
         {slides.map((_, i) => (
           <button 
             key={i} 
             onClick={() => setCurrent(i)}
-            className={`w-3 h-3 rounded-full transition-all ${i === current ? 'bg-white w-8' : 'bg-white/50'}`}
+            className={`h-1 transition-all ${i === current ? 'bg-accent w-12' : 'bg-white/30 w-6'}`}
           />
         ))}
       </div>

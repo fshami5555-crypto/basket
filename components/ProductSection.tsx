@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Eye } from 'lucide-react';
 import { Product } from '../types';
 
 interface ProductSectionProps {
@@ -15,20 +15,20 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products, onSeeA
   if (products.length === 0) return null;
 
   return (
-    <section className="mb-16">
-      <div className="flex items-center justify-between mb-8 border-b pb-4">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-800">{title}</h2>
+    <section className="mb-12">
+      <div className="flex items-center justify-between mb-6 border-b-2 border-primary/10 pb-2">
+        <h2 className="text-xl md:text-2xl font-black text-primary border-r-4 border-accent pr-4">{title}</h2>
         {onSeeAll && (
           <button 
             onClick={onSeeAll}
-            className="text-[#f04e23] font-semibold hover:underline"
+            className="text-primary font-bold hover:text-accent text-sm"
           >
-            مشاهدة الكل
+            مشاهدة جميع المنتجات &larr;
           </button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         {products.map((product) => {
           const hasDiscount = product.discountPrice && product.discountPrice < product.price;
           
@@ -36,41 +36,63 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products, onSeeA
             <div 
               key={product.id} 
               onClick={() => onProductClick?.(product)}
-              className="bg-white rounded-lg shadow-sm border p-4 group hover:shadow-lg transition-all cursor-pointer relative"
+              className="bg-white rounded-lg border border-gray-200 overflow-hidden product-card transition-all cursor-pointer flex flex-col"
             >
-              {hasDiscount && (
-                <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full z-10">
-                  خصم {Math.round(((product.price - product.discountPrice!) / product.price) * 100)}%
+              <div className="aspect-square relative p-4 bg-white overflow-hidden group">
+                {hasDiscount && (
+                  <div className="absolute top-2 right-2 bg-accent text-white text-[10px] font-black px-3 py-1 rounded-full z-10 shadow-md">
+                    وفر {Math.round(((product.price - product.discountPrice!) / product.price) * 100)}%
+                  </div>
+                )}
+                <img 
+                  src={product.image} 
+                  alt={product.name} 
+                  className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" 
+                />
+                
+                {/* Hover Actions */}
+                <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                   <button 
+                    onClick={(e) => { e.stopPropagation(); onProductClick?.(product); }}
+                    className="bg-white text-primary p-3 rounded-full shadow-lg hover:bg-primary hover:text-white transition-colors"
+                  >
+                    <Eye size={20} />
+                  </button>
                 </div>
-              )}
-              <div className="aspect-square rounded-md overflow-hidden mb-4 relative bg-gray-50 border border-gray-100">
-                <img src={product.image} alt={product.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
-                <button 
-                  onClick={(e) => { e.stopPropagation(); onAddToCart?.(product); }}
-                  className="absolute bottom-2 left-2 bg-white p-2 rounded-full shadow-md text-[#f04e23] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#f04e23] hover:text-white"
-                >
-                  <ShoppingCart size={20} />
-                </button>
               </div>
-              <p className="text-[10px] text-[#f04e23] font-bold mb-1 uppercase tracking-wider">{product.category}</p>
-              <h3 className="font-bold text-gray-800 mb-2 h-10 overflow-hidden text-sm leading-tight">{product.name}</h3>
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-lg font-black text-gray-900 leading-none">
-                    {hasDiscount ? product.discountPrice : product.price} <span className="text-xs">د.أ</span>
-                  </span>
-                  {hasDiscount && (
-                    <span className="text-xs text-gray-400 line-through decoration-red-400">
-                      {product.price} د.أ
-                    </span>
-                  )}
+
+              <div className="p-4 flex-grow flex flex-col">
+                <p className="text-[10px] text-gray-400 font-bold mb-1 uppercase tracking-tighter">{product.category}</p>
+                <h3 className="font-bold text-gray-800 mb-3 h-10 overflow-hidden text-sm leading-snug group-hover:text-primary transition-colors">
+                  {product.name}
+                </h3>
+                
+                <div className="mt-auto">
+                  <div className="flex flex-col mb-4">
+                    {hasDiscount ? (
+                      <>
+                        <span className="text-xs text-gray-400 line-through">
+                          {product.price.toFixed(0)} د.أ
+                        </span>
+                        <span className="text-xl font-black text-accent leading-none">
+                          {product.discountPrice?.toFixed(0)} <span className="text-xs">د.أ</span>
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-xl font-black text-primary leading-none">
+                        {product.price.toFixed(0)} <span className="text-xs">د.أ</span>
+                      </span>
+                    )}
+                  </div>
+                  
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onAddToCart?.(product); }}
+                    className="w-full bg-primary text-white py-2 rounded font-bold text-xs flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors"
+                  >
+                    <ShoppingCart size={14} />
+                    أضف إلى السلة
+                  </button>
                 </div>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); onAddToCart?.(product); }}
-                  className="bg-gray-50 text-gray-400 p-2 rounded hover:bg-[#f04e23] hover:text-white transition-colors"
-                >
-                  <ShoppingCart size={16} />
-                </button>
               </div>
             </div>
           );

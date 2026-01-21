@@ -53,6 +53,13 @@ export interface Order {
   items: { productName: string; quantity: number; price: number }[];
 }
 
+export interface HelpSection {
+  id: string;
+  title: string;
+  content: string;
+  icon?: string;
+}
+
 export interface AppState {
   products: Product[];
   categories: Category[];
@@ -60,4 +67,5 @@ export interface AppState {
   orders: Order[];
   ads: Ad[];
   specialOffers?: SpecialOffer[];
+  helpSections: HelpSection[];
 }
