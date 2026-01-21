@@ -11,6 +11,15 @@ export const INITIAL_STATE: AppState = {
     { id: '4', name: 'أجهزة كهربائية للمنزل', image: 'https://picsum.photos/seed/home/400/400' },
     { id: '5', name: 'ماكينات قهوة', image: 'https://picsum.photos/seed/coffee/400/400' },
   ],
+  brands: [
+    { id: 'b1', name: 'ARISTON', logo: 'https://seeklogo.com/images/A/ariston-logo-C79F3795A4-seeklogo.com.png', image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800' },
+    { id: 'b2', name: 'CONTI', logo: 'https://springgreen-leopard-502388.hostingersite.com/wp-content/uploads/2021/06/conti.png', image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=800' },
+    { id: 'b3', name: 'PHILIPS', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Philips_logo_new.svg/1280px-Philips_logo_new.svg.png', image: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&q=80&w=800' },
+    { id: 'b4', name: 'HISENSE', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Hisense_logo.svg/1280px-Hisense_logo.svg.png', image: 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&q=80&w=800' },
+    { id: 'b5', name: 'OPERA', logo: 'https://springgreen-leopard-502388.hostingersite.com/wp-content/uploads/2021/06/opera.png', image: 'https://images.unsplash.com/photo-1590794056226-77ee3d416075?auto=format&fit=crop&q=80&w=800' },
+    { id: 'b6', name: 'VESTEL', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Vestel_logo.svg/1280px-Vestel_logo.svg.png', image: 'https://images.unsplash.com/photo-1571175432248-356073167195?auto=format&fit=crop&q=80&w=800' },
+    { id: 'b7', name: 'LA GERMANIA', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/La_Germania_logo.svg/1280px-La_Germania_logo.svg.png', image: 'https://images.unsplash.com/photo-1599619351208-3e6c839d7824?auto=format&fit=crop&q=80&w=800' },
+  ],
   products: [
     { id: 'p1', name: 'محضرة طعام احترافية', price: 120, category: 'أجهزة كهربائية للمطبخ', image: 'https://picsum.photos/seed/p1/500/500', description: 'خلاط ومحضرة طعام متعددة الوظائف بقوة 1000 واط.' },
     { id: 'p2', name: 'ماكينة إسبريسو', price: 85, category: 'ماكينات قهوة', image: 'https://picsum.photos/seed/p2/500/500', description: 'ماكينة قهوة إيطالية لتحضير أفضل أنواع الإسبريسو.' },
@@ -37,47 +46,13 @@ export const INITIAL_STATE: AppState = {
     { id: 'ad1', image: 'https://springgreen-leopard-502388.hostingersite.com/wp-content/uploads/2024/08/toys_slider_desk_ar-1920x290-1.jpg' }
   ],
   specialOffers: [],
-  orders: [
-    { 
-      id: 'ord-1001', 
-      customerName: 'أحمد علي', 
-      phoneNumber: '0791234567', 
-      total: 120, 
-      status: 'pending', 
-      date: '2024-05-20',
-      items: [{ productName: 'محضرة طعام احترافية', quantity: 1, price: 120 }]
-    }
-  ],
+  orders: [],
   helpSections: [
-    { 
-      id: 'help-guide', 
-      title: 'دليل المساعدة', 
-      content: 'مرحباً بكم في دليل المساعدة الخاص بمتجر "سلة التسوق". هنا تجدون كافة المعلومات التقنية والإرشادية لاستخدام موقعنا بكل سهولة. نحن نؤمن بأن تجربة العميل تبدأ من سهولة الوصول للمعلومة، لذا قمنا بتصميم هذا الموقع ليكون بسيطاً وواضحاً.\n\nيمكنكم التنقل بين الأقسام عبر القائمة العلوية، وإضافة المنتجات للسلة بضغطة واحدة، وإتمام الطلب عبر الواتساب للتواصل المباشر مع فريقنا.' 
-    },
-    { 
-      id: 'help-center', 
-      title: 'مركز المساعدة', 
-      content: 'مركز المساعدة مخصص لحل كافة مشكلاتكم والرد على استفساراتكم. إذا واجهتم أي مشكلة في الطلب أو كنتم ترغبون في الاستفسار عن تفاصيل منتج معين، فريق الدعم لدينا جاهز للخدمة.\n\nطرق التواصل:\n- واتساب: 0790999512\n- الهاتف: 0790999512\n- البريد الإلكتروني: help@basketshop.com\n\nنحن متواجدون من السبت إلى الخميس، من 9 صباحاً حتى 9 مساءً.' 
-    },
-    { 
-      id: 'how-to-buy', 
-      title: 'كيف أشتري؟', 
-      content: 'الشراء من "سلة التسوق" عملية سهلة وسريعة:\n\n1. تصفح الأقسام أو استخدم خانة البحث للوصول لمنتجك المفضل.\n2. اضغط على زر "أضف إلى السلة" الموجود على صورة المنتج.\n3. بعد الانتهاء، اضغط على أيقونة سلة المشتريات في الأعلى.\n4. راجع طلبك ثم اضغط "المتابعة لإتمام الطلب".\n5. أدخل اسمك ورقم هاتفك بدقة.\n6. اضغط على "إرسال للواتساب"، سيفتح تطبيق الواتساب وبداخله تفاصيل طلبك، فقط اضغط إرسال وسيقوم فريقنا بالرد عليك فوراً لتأكيد الطلب.' 
-    },
-    { 
-      id: 'shipping', 
-      title: 'الشحن والتسليم', 
-      content: 'نحن نعتز بتقديم خدمة توصيل سريعة وموثوقة لكافة محافظات المملكة الأردنية الهاشمية:\n\n- التوصيل داخل عمان والزرقاء: خلال 24 ساعة عمل.\n- التوصيل لباقي المحافظات (إربد، العقبة، المفرق، إلخ): خلال 24-48 ساعة عمل.\n- رسوم التوصيل ثابتة ومعقولة جداً.\n- يتم فحص المنتج من قبل العميل عند الاستلام للتأكد من سلامته.' 
-    },
-    { 
-      id: 'product-policy', 
-      title: 'سياسة المنتج', 
-      content: 'نحن في "سلة التسوق" نضمن أن جميع الأجهزة الكهربائية ومنتجات العناية أصلية 100% ومن الوكلاء المعتمدين في الأردن.\n\n- جميع الأجهزة تخضع لكفالة الوكيل الرسمية.\n- نوفر شرحاً وافياً لكل منتج، وفي حال وجود أي اختلاف عما تم طلبه، نلتزم بالتبديل الفوري.\n- جميع المنتجات يتم تخزينها ونقلها وفق أعلى معايير الجودة.' 
-    },
-    { 
-      id: 'returns', 
-      title: 'كيفية العودة', 
-      content: 'يمكنكم إرجاع المنتج أو استبداله خلال 3 أيام من تاريخ الاستلام وفق الشروط التالية:\n\n1. أن يكون المنتج بحالته الأصلية، غير مستخدم، وفي تغليفه الأصلي (بكرتونته).\n2. إحضار فاتورة الشراء الأصلية.\n3. في حال كان الإرجاع بسبب "تغيير رأي العميل" دون وجود عيب مصنعي، يتحمل العميل أجور التوصيل.\n4. في حال وجود عيب مصنعي، يتم الاستبدال أو الإرجاع مجاناً بالكامل دون أي تكاليف إضافية.' 
-    },
+    { id: 'help-guide', title: 'دليل المساعدة', content: '...' },
+    { id: 'help-center', title: 'مركز المساعدة', content: '...' },
+    { id: 'how-to-buy', title: 'كيف أشتري؟', content: '...' },
+    { id: 'shipping', title: 'الشحن والتسليم', content: '...' },
+    { id: 'product-policy', title: 'سياسة المنتج', content: '...' },
+    { id: 'returns', title: 'كيفية العودة', content: '...' },
   ]
 };

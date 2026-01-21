@@ -17,6 +17,13 @@ export interface Category {
   image: string;
 }
 
+export interface Brand {
+  id: string;
+  name: string;
+  logo: string;
+  image: string;
+}
+
 export interface HeroSlide {
   id: string;
   image: string;
@@ -63,6 +70,7 @@ export interface HelpSection {
 export interface AppState {
   products: Product[];
   categories: Category[];
+  brands: Brand[];
   heroSlides: HeroSlide[];
   orders: Order[];
   ads: Ad[];

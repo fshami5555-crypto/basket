@@ -6,6 +6,7 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import CategoryGrid from './components/CategoryGrid';
 import ProductSection from './components/ProductSection';
+import BrandSection from './components/BrandSection';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
@@ -137,12 +138,10 @@ const App: React.FC = () => {
       }))
     };
 
-    // Save to Admin State
     if (state) {
       updateState({ orders: [newOrder, ...state.orders] });
     }
 
-    // Prepare WhatsApp Message
     let message = `*طلب جديد من متجر Basket Shop*\n`;
     message += `*رقم الطلب:* ${orderId}\n`;
     message += `*الاسم:* ${customerName}\n`;
@@ -158,11 +157,8 @@ const App: React.FC = () => {
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/962790999512?text=${encodedMessage}`;
     
-    // Clear cart and close
     setCartItems([]);
     setIsCartOpen(false);
-    
-    // Redirect to WhatsApp
     window.open(whatsappUrl, '_blank');
   };
 
@@ -187,6 +183,7 @@ const App: React.FC = () => {
 
   const categories = state.categories || [];
   const products = state.products || [];
+  const brands = state.brands || [];
   const ads = state.ads || [];
   const specialOffers = state.specialOffers || [];
 
@@ -216,6 +213,9 @@ const App: React.FC = () => {
                   المتجر الأول بالأردن المرخص والمعتمد لدى الوكالات الكهربائية لتستقبلك بأفرع رسمية للتأكد من جودة المنتج وتجربته
                 </h1>
               </div>
+
+              {/* Brand Section Below Hero */}
+              <BrandSection brands={brands} />
 
               <CategoryGrid 
                 categories={categories} 
@@ -275,7 +275,6 @@ const App: React.FC = () => {
 
       <Footer onHelpClick={navigateToHelp} onContactClick={navigateToContact} />
 
-      {/* Cart Drawer */}
       <CartDrawer 
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
