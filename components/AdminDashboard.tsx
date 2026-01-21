@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { AppState, Product, Category, HeroSlide, Order, Ad, SpecialOffer, HelpSection } from '../types';
-import { Package, Grid, LayoutPanelLeft, ShoppingBag, LogOut, Plus, Trash2, Megaphone, Image as ImageIcon, ChevronDown, ChevronUp, Zap, Clock, Info } from 'lucide-react';
+import { AppState, Product, Category, HeroSlide, Order, Ad, SpecialOffer, HelpSection, Brand } from '../types';
+import { Package, Grid, LayoutPanelLeft, ShoppingBag, LogOut, Plus, Trash2, Megaphone, Image as ImageIcon, ChevronDown, ChevronUp, Zap, Clock, Info, Award } from 'lucide-react';
 import { LOGO_URL } from '../constants';
 
 interface AdminDashboardProps {
@@ -11,11 +11,12 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'categories' | 'products' | 'hero' | 'ads' | 'offers' | 'help'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'categories' | 'products' | 'hero' | 'ads' | 'offers' | 'help' | 'brands'>('orders');
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
   const products = state.products || [];
   const categories = state.categories || [];
+  const brands = state.brands || [];
   const heroSlides = state.heroSlides || [];
   const ads = state.ads || [];
   const orders = state.orders || [];
@@ -25,12 +26,33 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
   const tabs = [
     { id: 'orders', label: 'الطلبات', icon: ShoppingBag },
     { id: 'categories', label: 'الأقسام', icon: Grid },
+    { id: 'brands', label: 'العلامات التجارية', icon: Award },
     { id: 'products', label: 'المنتجات', icon: Package },
     { id: 'hero', label: 'الهيرو (Slider)', icon: LayoutPanelLeft },
     { id: 'ads', label: 'إعلانات الموقع', icon: Megaphone },
     { id: 'offers', label: 'عروض الفلاش', icon: Zap },
     { id: 'help', label: 'دليل المساعدة', icon: Info },
   ] as const;
+
+  // Brands Management
+  const addBrand = () => {
+    const newBrand: Brand = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: 'ماركة جديدة',
+      logo: 'https://via.placeholder.com/150x50?text=Logo',
+      image: 'https://picsum.photos/seed/brand/800/600'
+    };
+    updateState({ brands: [...brands, newBrand] });
+  };
+
+  const deleteBrand = (id: string) => {
+    updateState({ brands: brands.filter(b => b.id !== id) });
+  };
+
+  const updateBrand = (id: string, partial: Partial<Brand>) => {
+    const newBrands = brands.map(b => b.id === id ? { ...b, ...partial } : b);
+    updateState({ brands: newBrands });
+  };
 
   // Products
   const addProduct = () => {
@@ -127,7 +149,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => setActiveTab(tab.id as any)}
               className={`w-full flex items-center gap-4 px-6 py-4 transition-colors ${activeTab === tab.id ? 'bg-[#f04e23] text-white' : 'text-gray-400 hover:bg-slate-800'}`}
             >
               <tab.icon size={20} />
@@ -193,6 +215,66 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* Brands Tab */}
+          {activeTab === 'brands' && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="font-bold text-xl flex items-center gap-2"><Award className="text-accent" /> إدارة العلامات التجارية</h3>
+                <button onClick={addBrand} className="bg-primary text-white px-6 py-2 rounded-xl flex items-center gap-2 font-bold hover:bg-primary-dark shadow-lg">
+                  <Plus size={20} /> إضافة ماركة جديدة
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {brands.map((brand) => (
+                  <div key={brand.id} className="border-2 border-gray-100 rounded-3xl p-6 hover:border-primary/20 transition-all relative group bg-gray-50/30">
+                    <button 
+                      onClick={() => deleteBrand(brand.id)}
+                      className="absolute top-4 left-4 text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition-all"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-black text-gray-400 mb-1 uppercase">اسم الماركة</label>
+                        <input 
+                          className="w-full border-b-2 border-transparent focus:border-primary p-2 bg-transparent outline-none font-bold text-gray-800"
+                          value={brand.name}
+                          onChange={(e) => updateBrand(brand.id, { name: e.target.value })}
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-black text-gray-400 mb-1">رابط الشعار (Logo)</label>
+                        <input 
+                          className="w-full border p-2 rounded-lg bg-white text-xs text-blue-500 font-mono"
+                          value={brand.logo}
+                          onChange={(e) => updateBrand(brand.id, { logo: e.target.value })}
+                        />
+                        <div className="h-12 flex items-center justify-center bg-white border mt-2 rounded-lg p-2">
+                          <img src={brand.logo} className="max-h-full max-w-full object-contain" alt="Logo Preview" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-black text-gray-400 mb-1">رابط الصورة التعبيرية</label>
+                        <input 
+                          className="w-full border p-2 rounded-lg bg-white text-xs text-blue-500 font-mono"
+                          value={brand.image}
+                          onChange={(e) => updateBrand(brand.id, { image: e.target.value })}
+                        />
+                        <div className="aspect-[4/3] w-full bg-white border mt-2 rounded-lg overflow-hidden">
+                          <img src={brand.image} className="w-full h-full object-cover" alt="Image Preview" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
