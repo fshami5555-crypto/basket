@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { AppState, Product, Category, HeroSlide, Order, Ad, SpecialOffer, HelpSection, Brand } from '../types';
-import { Package, Grid, LayoutPanelLeft, ShoppingBag, LogOut, Plus, Trash2, Megaphone, Image as ImageIcon, ChevronDown, ChevronUp, Zap, Clock, Info, Award, Calendar, ExternalLink } from 'lucide-react';
+import { Package, Grid, LayoutPanelLeft, ShoppingBag, LogOut, Plus, Trash2, Megaphone, Image as ImageIcon, ChevronDown, ChevronUp, Zap, Clock, Info, Award, Calendar, ExternalLink, X, FileText } from 'lucide-react';
 import { LOGO_URL } from '../constants';
 
 interface AdminDashboardProps {
@@ -13,6 +13,7 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onLogout }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'categories' | 'products' | 'hero' | 'ads' | 'offers' | 'help' | 'brands'>('orders');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
 
   const products = state.products || [];
   const categories = state.categories || [];
@@ -34,21 +35,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
     { id: 'help', label: 'المساعدة', icon: Info },
   ] as const;
 
-  // Generic Update Helpers
-  // Fix: Simplified updateItem to avoid generic inference issues with AppState
   const updateItem = (key: keyof AppState, id: string, partial: any) => {
     const list = (state[key] as any[]) || [];
     const newList = list.map(item => item.id === id ? { ...item, ...partial } : item);
     updateState({ [key]: newList });
   };
 
-  // Fix: Simplified deleteItem to match new signature style
   const deleteItem = (key: keyof AppState, id: string) => {
     const list = (state[key] as any[]) || [];
     updateState({ [key]: list.filter(item => item.id !== id) });
   };
 
-  // Specific Handlers
   const addHeroSlide = () => {
     const newSlide: HeroSlide = {
       id: Math.random().toString(36).substr(2, 9),
@@ -82,7 +79,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
     setEditingId(newOffer.id);
   };
 
-  // Fix: Added missing addCategory handler
   const addCategory = () => {
     const newCat: Category = {
       id: Math.random().toString(36).substr(2, 9),
@@ -177,16 +173,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
                   <table className="w-full text-right border-collapse">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">رقم الطلب</th>
-                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">العميل</th>
-                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">المجموع</th>
-                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">الحالة</th>
-                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase">التفاصيل</th>
+                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">رقم الطلب</th>
+                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">العميل</th>
+                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">المجموع</th>
+                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">الحالة</th>
+                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">التفاصيل</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {orders.map(order => (
-                        <tr key={order.id} className="hover:bg-blue-50/30 transition-colors">
+                        <tr key={order.id} className="hover:bg-blue-50/30 transition-colors group">
                           <td className="px-6 py-5 text-sm font-black text-primary">#{order.id}</td>
                           <td className="px-6 py-5">
                             <div className="flex flex-col">
@@ -200,11 +196,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
                               {order.status === 'pending' ? 'بانتظار التأكيد' : 'تم التوصيل'}
                             </span>
                           </td>
-                          <td className="px-6 py-5">
-                             <button className="text-xs font-bold text-blue-500 hover:underline">عرض المنتجات</button>
+                          <td className="px-6 py-5 text-center">
+                             <button 
+                               onClick={() => setViewingOrder(order)}
+                               className="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 mx-auto"
+                             >
+                               <FileText size={14} /> عرض المنتجات
+                             </button>
                           </td>
                         </tr>
                       ))}
+                      {orders.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="py-20 text-center text-gray-400 font-bold">لا توجد طلبات حالياً</td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -462,6 +468,91 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
 
         </div>
       </main>
+
+      {/* Order Details Modal */}
+      {viewingOrder && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setViewingOrder(null)}></div>
+           <div className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-slide">
+              <div className="p-6 border-b flex items-center justify-between bg-primary text-white">
+                 <div className="flex items-center gap-3">
+                    <ShoppingBag size={24} />
+                    <div>
+                       <h3 className="font-black text-lg">تفاصيل الطلب #{viewingOrder.id}</h3>
+                       <p className="text-[10px] opacity-80 uppercase tracking-widest">{viewingOrder.date}</p>
+                    </div>
+                 </div>
+                 <button onClick={() => setViewingOrder(null)} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+                    <X size={24} />
+                 </button>
+              </div>
+
+              <div className="p-8">
+                 <div className="grid grid-cols-2 gap-8 mb-8">
+                    <div>
+                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">اسم العميل</label>
+                       <p className="font-black text-gray-800 text-lg">{viewingOrder.customerName}</p>
+                    </div>
+                    <div>
+                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">رقم الهاتف</label>
+                       <p className="font-bold text-gray-600 font-mono text-lg">{viewingOrder.phoneNumber}</p>
+                    </div>
+                 </div>
+
+                 <div className="bg-gray-50 rounded-2xl overflow-hidden border">
+                    <table className="w-full text-right border-collapse">
+                       <thead className="bg-gray-100/50">
+                          <tr>
+                             <th className="px-6 py-4 text-xs font-black text-gray-400">المنتج</th>
+                             <th className="px-6 py-4 text-xs font-black text-gray-400 text-center">الكمية</th>
+                             <th className="px-6 py-4 text-xs font-black text-gray-400">السعر</th>
+                          </tr>
+                       </thead>
+                       <tbody className="divide-y divide-gray-200">
+                          {viewingOrder.items.map((item, idx) => (
+                             <tr key={idx}>
+                                <td className="px-6 py-4 text-sm font-bold text-gray-800">{item.productName}</td>
+                                <td className="px-6 py-4 text-sm font-black text-primary text-center">×{item.quantity}</td>
+                                <td className="px-6 py-4 text-sm font-bold text-accent">{(item.price * item.quantity).toFixed(2)} د.أ</td>
+                             </tr>
+                          ))}
+                       </tbody>
+                       <tfoot className="bg-primary/5">
+                          <tr>
+                             <td colSpan={2} className="px-6 py-4 font-black text-gray-800 text-lg">الإجمالي الكلي</td>
+                             <td className="px-6 py-4 font-black text-accent text-2xl">{viewingOrder.total.toFixed(2)} د.أ</td>
+                          </tr>
+                       </tfoot>
+                    </table>
+                 </div>
+
+                 <div className="mt-8 flex gap-4">
+                    <button 
+                       onClick={() => {
+                          const status = viewingOrder.status === 'pending' ? 'completed' : 'pending';
+                          updateItem('orders', viewingOrder.id, { status });
+                          setViewingOrder({...viewingOrder, status});
+                       }}
+                       className={`flex-1 py-4 rounded-2xl font-black text-white shadow-lg transition-all active:scale-95 ${viewingOrder.status === 'pending' ? 'bg-green-600 shadow-green-200 hover:bg-green-700' : 'bg-yellow-500 shadow-yellow-200 hover:bg-yellow-600'}`}
+                    >
+                       {viewingOrder.status === 'pending' ? 'تأكيد إتمام الطلب' : 'إعادة الطلب للانتظار'}
+                    </button>
+                    <button 
+                       onClick={() => {
+                          if (confirm('هل أنت متأكد من حذف هذا الطلب؟')) {
+                             deleteItem('orders', viewingOrder.id);
+                             setViewingOrder(null);
+                          }
+                       }}
+                       className="px-6 py-4 bg-red-50 text-red-500 rounded-2xl font-black hover:bg-red-500 hover:text-white transition-all shadow-lg shadow-red-100 active:scale-95"
+                    >
+                       حذف الطلب
+                    </button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };
