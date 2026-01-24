@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { AppState, Product, Category, HeroSlide, Order, Ad, SpecialOffer, HelpSection, Brand } from '../types';
 import { Package, Grid, LayoutPanelLeft, ShoppingBag, LogOut, Plus, Trash2, Megaphone, Image as ImageIcon, ChevronDown, ChevronUp, Zap, Clock, Info, Award, Calendar, ExternalLink, X, FileText } from 'lucide-react';
 import { LOGO_URL } from '../constants';
+import ImageUpload from './ImageUpload';
 
 interface AdminDashboardProps {
   state: AppState;
@@ -206,11 +207,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
                           </td>
                         </tr>
                       ))}
-                      {orders.length === 0 && (
-                        <tr>
-                          <td colSpan={5} className="py-20 text-center text-gray-400 font-bold">لا توجد طلبات حالياً</td>
-                        </tr>
-                      )}
                     </tbody>
                   </table>
                 </div>
@@ -247,11 +243,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
                     </div>
                     {editingId === slide.id && (
                       <div className="p-6 border-t bg-gray-50/50 space-y-4 animate-slide">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                           <input className="p-4 bg-white rounded-xl border-none outline-none font-bold shadow-sm" placeholder="عنوان السلايد" value={slide.title} onChange={e => updateItem('heroSlides', slide.id, {title: e.target.value})} />
-                           <input className="p-4 bg-white rounded-xl border-none outline-none font-bold shadow-sm" placeholder="النص الفرعي" value={slide.subtitle} onChange={e => updateItem('heroSlides', slide.id, {subtitle: e.target.value})} />
-                           <input className="p-4 bg-white rounded-xl border-none outline-none font-bold shadow-sm" placeholder="رابط الصورة" value={slide.image} onChange={e => updateItem('heroSlides', slide.id, {image: e.target.value})} />
-                           <input className="p-4 bg-white rounded-xl border-none outline-none font-bold shadow-sm" placeholder="نص الزر" value={slide.buttonText} onChange={e => updateItem('heroSlides', slide.id, {buttonText: e.target.value})} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div className="space-y-4">
+                              <label className="text-xs font-black text-gray-400 uppercase">البيانات النصية</label>
+                              <input className="w-full p-4 bg-white rounded-xl border-none outline-none font-bold shadow-sm" placeholder="عنوان السلايد" value={slide.title} onChange={e => updateItem('heroSlides', slide.id, {title: e.target.value})} />
+                              <input className="w-full p-4 bg-white rounded-xl border-none outline-none font-bold shadow-sm" placeholder="النص الفرعي" value={slide.subtitle} onChange={e => updateItem('heroSlides', slide.id, {subtitle: e.target.value})} />
+                              <input className="w-full p-4 bg-white rounded-xl border-none outline-none font-bold shadow-sm" placeholder="نص الزر" value={slide.buttonText} onChange={e => updateItem('heroSlides', slide.id, {buttonText: e.target.value})} />
+                           </div>
+                           <div className="space-y-4">
+                              <label className="text-xs font-black text-gray-400 uppercase">إدارة الصورة</label>
+                              <div className="flex flex-col gap-4">
+                                <ImageUpload onUploadSuccess={(url) => updateItem('heroSlides', slide.id, {image: url})} />
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-[10px] font-black text-gray-400 mr-1 uppercase">رابط الصورة المباشر</label>
+                                  <input className="w-full p-4 bg-white rounded-xl border-none outline-none font-bold shadow-sm" placeholder="رابط الصورة" value={slide.image} onChange={e => updateItem('heroSlides', slide.id, {image: e.target.value})} />
+                                </div>
+                              </div>
+                           </div>
                         </div>
                       </div>
                     )}
@@ -275,7 +283,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
                   <div key={ad.id} className="bg-white rounded-3xl border p-6 flex flex-col md:flex-row items-center gap-6">
                     <img src={ad.image} className="w-full md:w-80 h-24 object-cover rounded-xl border" />
                     <div className="flex-1 flex flex-col gap-4">
-                       <input className="w-full p-4 bg-gray-50 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary" value={ad.image} placeholder="رابط صورة البنر" onChange={e => updateItem('ads', ad.id, {image: e.target.value})} />
+                       <ImageUpload onUploadSuccess={(url) => updateItem('ads', ad.id, {image: url})} label="رفع بنر جديد" />
+                       <input className="w-full p-4 bg-gray-50 rounded-xl font-bold outline-none focus:ring-2 focus:ring-primary" value={ad.image} placeholder="أو ضع رابط صورة البنر هنا" onChange={e => updateItem('ads', ad.id, {image: e.target.value})} />
                        <div className="flex justify-end">
                           <button onClick={() => deleteItem('ads', ad.id)} className="text-red-500 font-bold bg-red-50 px-6 py-2 rounded-xl flex items-center gap-2 hover:bg-red-500 hover:text-white transition-all">
                              <Trash2 size={18} /> حذف البنر
@@ -285,6 +294,155 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Categories Tab */}
+          {activeTab === 'categories' && (
+             <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-black text-2xl text-primary">تصنيفات المتجر</h3>
+                  <button onClick={addCategory} className="bg-primary text-white px-6 py-2 rounded-2xl font-bold flex items-center gap-2">
+                    <Plus size={18}/> إضافة قسم
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {categories.map(cat => (
+                    <div key={cat.id} className="bg-white p-6 rounded-3xl border flex flex-col gap-4 group">
+                      <div className="flex items-center gap-4">
+                        <img src={cat.image} className="w-20 h-20 rounded-2xl object-cover border" />
+                        <div className="flex-1">
+                          <input className="w-full p-2 font-black border-none bg-gray-50 rounded-lg mb-2" value={cat.name} onChange={e => updateItem('categories', cat.id, {name: e.target.value})}/>
+                          <button onClick={() => deleteItem('categories', cat.id)} className="text-red-400 hover:text-red-600 flex items-center gap-2 text-xs font-bold"><Trash2 size={16}/> حذف القسم</button>
+                        </div>
+                      </div>
+                      <div className="space-y-3 pt-2 border-t">
+                        <ImageUpload onUploadSuccess={(url) => updateItem('categories', cat.id, {image: url})} label="تغيير صورة القسم" />
+                        <input className="w-full p-3 text-[10px] text-gray-400 bg-gray-50 rounded-xl truncate" value={cat.image} onChange={e => updateItem('categories', cat.id, {image: e.target.value})}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+             </div>
+          )}
+
+          {/* Products Tab */}
+          {activeTab === 'products' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h3 className="font-black text-2xl text-primary">المنتجات المعروضة</h3>
+                <button onClick={() => {
+                  const newProd: Product = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    name: 'منتج جديد',
+                    price: 0,
+                    category: categories[0]?.name || 'غير مصنف',
+                    image: 'https://picsum.photos/400/400',
+                    description: 'وصف مختصر...'
+                  };
+                  updateState({ products: [newProd, ...products] });
+                  setEditingId(newProd.id);
+                }} className="w-full sm:w-auto bg-accent text-white px-8 py-3 rounded-2xl flex items-center justify-center gap-3 font-black">
+                  <Plus size={20} /> إضافة منتج جديد
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {products.map(p => (
+                  <div key={p.id} className="bg-white rounded-3xl p-5 border shadow-sm">
+                    <div className="flex flex-col md:flex-row items-center gap-6">
+                      <div className="w-20 h-20 bg-gray-50 rounded-2xl border flex-shrink-0 overflow-hidden">
+                         <img src={p.image} className="w-full h-full object-contain" />
+                      </div>
+                      <div className="flex-1 text-center md:text-right">
+                        <h4 className="font-black text-gray-800 text-lg">{p.name}</h4>
+                        <span className="text-accent font-black">{p.price} د.أ</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => setEditingId(editingId === p.id ? null : p.id)} className={`px-5 py-2 rounded-xl font-bold ${editingId === p.id ? 'bg-primary text-white' : 'bg-blue-50 text-blue-500'}`}>تعديل</button>
+                        <button onClick={() => deleteItem('products', p.id)} className="p-3 bg-red-50 text-red-500 rounded-xl"><Trash2 size={18} /></button>
+                      </div>
+                    </div>
+                    {editingId === p.id && (
+                      <div className="mt-6 pt-6 border-t grid grid-cols-1 lg:grid-cols-2 gap-8 animate-slide">
+                         <div className="space-y-4">
+                            <label className="text-xs font-black text-gray-400 uppercase">معلومات المنتج</label>
+                            <input className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none" value={p.name} placeholder="اسم المنتج" onChange={e => updateItem('products', p.id, {name: e.target.value})} />
+                            <div className="grid grid-cols-2 gap-4">
+                               <input type="number" className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none" value={p.price} placeholder="السعر" onChange={e => updateItem('products', p.id, {price: Number(e.target.value)})} />
+                               <select className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none" value={p.category} onChange={e => updateItem('products', p.id, {category: e.target.value})}>
+                                 {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                               </select>
+                            </div>
+                            <textarea className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none h-32" value={p.description} placeholder="وصف المنتج" onChange={e => updateItem('products', p.id, {description: e.target.value})} />
+                         </div>
+                         <div className="space-y-4">
+                            <label className="text-xs font-black text-gray-400 uppercase">صورة المنتج</label>
+                            <ImageUpload onUploadSuccess={(url) => updateItem('products', p.id, {image: url})} />
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[10px] font-black text-gray-400 uppercase mr-1">أو رابط الصورة</label>
+                              <input className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none" value={p.image} placeholder="رابط الصورة" onChange={e => updateItem('products', p.id, {image: e.target.value})} />
+                            </div>
+                         </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Brands Tab */}
+          {activeTab === 'brands' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="font-black text-2xl text-primary">إدارة الماركات</h3>
+                <button onClick={() => {
+                  const newB: Brand = { id: Math.random().toString(36).substr(2, 9), name: 'ماركة جديدة', logo: 'https://via.placeholder.com/150x50', image: 'https://picsum.photos/800/600' };
+                  updateState({ brands: [...brands, newB] });
+                }} className="bg-primary text-white p-3 rounded-2xl"><Plus/></button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {brands.map(brand => (
+                  <div key={brand.id} className="bg-white p-8 rounded-3xl border relative flex flex-col gap-6 group">
+                     <button onClick={() => deleteItem('brands', brand.id)} className="absolute top-4 left-4 text-red-400 hover:text-red-600"><Trash2 size={20}/></button>
+                     
+                     <div className="flex items-center gap-6">
+                        <img src={brand.logo} className="h-16 w-32 object-contain bg-gray-50 p-2 rounded-xl" />
+                        <div className="flex-1">
+                           <input className="w-full text-xl font-black border-none bg-gray-50 p-3 rounded-xl mb-2" value={brand.name} onChange={e => updateItem('brands', brand.id, {name: e.target.value})} />
+                        </div>
+                     </div>
+
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t">
+                        <div className="space-y-3">
+                           <ImageUpload onUploadSuccess={(url) => updateItem('brands', brand.id, {logo: url})} label="رفع اللوجو" />
+                           <input className="w-full text-[10px] text-blue-500 p-2 bg-gray-50 rounded-lg" value={brand.logo} onChange={e => updateItem('brands', brand.id, {logo: e.target.value})} />
+                        </div>
+                        <div className="space-y-3">
+                           <ImageUpload onUploadSuccess={(url) => updateItem('brands', brand.id, {image: url})} label="رفع صورة الواجهة" />
+                           <input className="w-full text-[10px] text-blue-500 p-2 bg-gray-50 rounded-lg" value={brand.image} onChange={e => updateItem('brands', brand.id, {image: e.target.value})} />
+                        </div>
+                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Help Tab */}
+          {activeTab === 'help' && (
+            <div className="space-y-8 bg-white p-8 rounded-3xl border">
+               {helpSections.map(section => (
+                 <div key={section.id} className="border-b last:border-0 pb-8 space-y-4">
+                    <label className="text-xs font-black text-gray-400 tracking-widest uppercase">{section.title}</label>
+                    <textarea 
+                      className="w-full p-6 bg-gray-50 rounded-2xl border-none min-h-[200px] outline-none font-bold text-gray-700 leading-relaxed" 
+                      value={section.content}
+                      onChange={e => updateItem('helpSections', section.id, {content: e.target.value})}
+                    />
+                 </div>
+               ))}
             </div>
           )}
 
@@ -340,128 +498,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ state, updateState, onL
                     </div>
                   );
                 })}
-              </div>
-            </div>
-          )}
-
-          {/* Categories Tab */}
-          {activeTab === 'categories' && (
-             <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-black text-2xl text-primary">تصنيفات المتجر</h3>
-                  <button onClick={addCategory} className="bg-primary text-white px-6 py-2 rounded-2xl font-bold flex items-center gap-2">
-                    <Plus size={18}/> إضافة قسم
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {categories.map(cat => (
-                    <div key={cat.id} className="bg-white p-4 rounded-3xl border flex items-center gap-4 group">
-                      <img src={cat.image} className="w-16 h-16 rounded-2xl object-cover" />
-                      <div className="flex-1">
-                        <input className="w-full font-black border-none bg-transparent" value={cat.name} onChange={e => updateItem('categories', cat.id, {name: e.target.value})}/>
-                        <input className="w-full text-[10px] text-gray-400 border-none bg-transparent truncate" value={cat.image} onChange={e => updateItem('categories', cat.id, {image: e.target.value})}/>
-                      </div>
-                      <button onClick={() => deleteItem('categories', cat.id)} className="text-red-400 hover:text-red-600"><Trash2 size={20}/></button>
-                    </div>
-                  ))}
-                </div>
-             </div>
-          )}
-
-          {/* Help Tab */}
-          {activeTab === 'help' && (
-            <div className="space-y-8 bg-white p-8 rounded-3xl border">
-               {helpSections.map(section => (
-                 <div key={section.id} className="border-b last:border-0 pb-8 space-y-4">
-                    <label className="text-xs font-black text-gray-400 tracking-widest uppercase">{section.title}</label>
-                    <textarea 
-                      className="w-full p-6 bg-gray-50 rounded-2xl border-none min-h-[200px] outline-none font-bold text-gray-700 leading-relaxed" 
-                      value={section.content}
-                      onChange={e => updateItem('helpSections', section.id, {content: e.target.value})}
-                    />
-                 </div>
-               ))}
-            </div>
-          )}
-
-          {/* Products Tab */}
-          {activeTab === 'products' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h3 className="font-black text-2xl text-primary">المنتجات المعروضة</h3>
-                <button onClick={() => {
-                  const newProd: Product = {
-                    id: Math.random().toString(36).substr(2, 9),
-                    name: 'منتج جديد',
-                    price: 0,
-                    category: categories[0]?.name || 'غير مصنف',
-                    image: 'https://picsum.photos/400/400',
-                    description: 'وصف مختصر...'
-                  };
-                  updateState({ products: [newProd, ...products] });
-                  setEditingId(newProd.id);
-                }} className="w-full sm:w-auto bg-accent text-white px-8 py-3 rounded-2xl flex items-center justify-center gap-3 font-black">
-                  <Plus size={20} /> إضافة منتج جديد
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4">
-                {products.map(p => (
-                  <div key={p.id} className="bg-white rounded-3xl p-5 border shadow-sm">
-                    <div className="flex flex-col md:flex-row items-center gap-6">
-                      <div className="w-20 h-20 bg-gray-50 rounded-2xl border flex-shrink-0 overflow-hidden">
-                         <img src={p.image} className="w-full h-full object-contain" />
-                      </div>
-                      <div className="flex-1 text-center md:text-right">
-                        <h4 className="font-black text-gray-800 text-lg">{p.name}</h4>
-                        <span className="text-accent font-black">{p.price} د.أ</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => setEditingId(editingId === p.id ? null : p.id)} className={`px-5 py-2 rounded-xl font-bold ${editingId === p.id ? 'bg-primary text-white' : 'bg-blue-50 text-blue-500'}`}>تعديل</button>
-                        <button onClick={() => deleteItem('products', p.id)} className="p-3 bg-red-50 text-red-500 rounded-xl"><Trash2 size={18} /></button>
-                      </div>
-                    </div>
-                    {editingId === p.id && (
-                      <div className="mt-6 pt-6 border-t grid grid-cols-1 md:grid-cols-2 gap-6 animate-slide">
-                         <div className="space-y-4">
-                            <input className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none" value={p.name} placeholder="اسم المنتج" onChange={e => updateItem('products', p.id, {name: e.target.value})} />
-                            <div className="grid grid-cols-2 gap-4">
-                               <input type="number" className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none" value={p.price} placeholder="السعر" onChange={e => updateItem('products', p.id, {price: Number(e.target.value)})} />
-                               <select className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none" value={p.category} onChange={e => updateItem('products', p.id, {category: e.target.value})}>
-                                 {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                               </select>
-                            </div>
-                         </div>
-                         <div className="space-y-4">
-                            <textarea className="w-full p-4 bg-gray-50 rounded-2xl font-bold outline-none h-32" value={p.description} placeholder="وصف المنتج" onChange={e => updateItem('products', p.id, {description: e.target.value})} />
-                         </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Brands Tab */}
-          {activeTab === 'brands' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h3 className="font-black text-2xl text-primary">إدارة الماركات</h3>
-                <button onClick={() => {
-                  const newB: Brand = { id: Math.random().toString(36).substr(2, 9), name: 'ماركة جديدة', logo: 'https://via.placeholder.com/150x50', image: 'https://picsum.photos/800/600' };
-                  updateState({ brands: [...brands, newB] });
-                }} className="bg-primary text-white p-3 rounded-2xl"><Plus/></button>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {brands.map(brand => (
-                  <div key={brand.id} className="bg-white p-6 rounded-3xl border relative group">
-                     <button onClick={() => deleteItem('brands', brand.id)} className="absolute top-4 left-4 text-red-400"><Trash2 size={18}/></button>
-                     <img src={brand.logo} className="h-12 mx-auto mb-4 object-contain" />
-                     <input className="w-full text-center font-black border-none bg-transparent" value={brand.name} onChange={e => updateItem('brands', brand.id, {name: e.target.value})} />
-                     <input className="w-full text-[10px] text-blue-500 mt-2 text-center" value={brand.logo} onChange={e => updateItem('brands', brand.id, {logo: e.target.value})} />
-                  </div>
-                ))}
               </div>
             </div>
           )}
